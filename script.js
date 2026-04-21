@@ -6,11 +6,33 @@ let allData = [];
 let lineChart = null;
 let scatterChart = null;
 
+// Normalize JSON data field names
+function normalizeData(data) {
+  return data.map(item => {
+    const normalized = {};
+    normalized.year = parseInt(item.Year);
+    normalized.state = item['State Abbreviation'];
+    
+    // Parse percentage strings like ".223" or "NA" to decimal
+    const parsePercent = (val) => {
+      if (val === 'NA' || val === undefined || val === null) return null;
+      const num = parseFloat(val);
+      return isNaN(num) ? null : num;
+    };
+    
+    normalized.debt_share = parsePercent(item['Share with medical debt in collections']);
+    normalized.median_debt = parseInt(item['Median medical debt in collections in $2023']) || null;
+    
+    return normalized;
+  }).filter(item => item.year && item.state);
+}
+
 // Load JSON data
 async function loadData() {
   try {
     const response = await fetch('data.json');
-    allData = await response.json();
+    const rawData = await response.json();
+    allData = normalizeData(rawData);
     console.log('Loaded', allData.length, 'records');
     
     populateDropdowns();
@@ -46,10 +68,11 @@ function populateDropdowns() {
   });
 }
 
-// Calculate average
+// Calculate average (skip null values)
 function average(array, field) {
-  if (array.length === 0) return 0;
-  return array.reduce((sum, item) => sum + item[field], 0) / array.length;
+  const valid = array.filter(item => item[field] != null);
+  if (valid.length === 0) return 0;
+  return valid.reduce((sum, item) => sum + item[field], 0) / valid.length;
 }
 
 // Get current filter values
@@ -60,48 +83,51 @@ function getFilters() {
   };
 }
 
-// Filter data based on selections
+// Filter data based on selections (exclude null values)
 function filterData(data) {
   const { year, state } = getFilters();
   
   return data.filter(item => {
+    if (item.debt_share == null || item.median_debt == null) return false;
     const yearMatch = year === 'all' || item.year.toString() === year;
     const stateMatch = state === 'all' || item.state === state;
     return yearMatch && stateMatch;
   });
 }
 
-// Calculate trend data for line chart
+// Calculate trend data for line chart (filter out null values)
 function getTrendData(data, selectedState) {
-  const years = [...new Set(data.map(d => d.year))].sort();
+  const validData = data.filter(d => d.debt_share != null);
+  const years = [...new Set(validData.map(d => d.year))].sort();
   
   return years.map(year => {
-    const yearData = data.filter(d => d.year === year);
+    const yearData = validData.filter(d => d.year === year);
+    if (yearData.length === 0) return null;
     
     let avgShare;
     if (selectedState === 'all') {
-      // National average = average of state averages
       const stateGroups = {};
       yearData.forEach(item => {
         if (!stateGroups[item.state]) stateGroups[item.state] = [];
         stateGroups[item.state].push(item);
       });
-      const stateAvgs = Object.values(stateGroups).map(recs => average(recs, 'debt_share'));
-      avgShare = stateAvgs.reduce((a, b) => a + b, 0) / stateAvgs.length;
+      const stateAvgs = Object.values(stateGroups).map(recs => average(recs, 'debt_share')).filter(v => v > 0);
+      avgShare = stateAvgs.length > 0 ? stateAvgs.reduce((a, b) => a + b, 0) / stateAvgs.length : 0;
     } else {
       const stateRecs = yearData.filter(d => d.state === selectedState);
       avgShare = average(stateRecs, 'debt_share');
     }
     
     return { year: year, avgShare: avgShare };
-  });
+  }).filter(d => d && d.avgShare > 0);
 }
 
-// Calculate scatter data: state averages
+// Calculate scatter data: state averages (filter nulls)
 function getScatterData(data) {
+  const validData = data.filter(d => d.debt_share != null && d.median_debt != null);
   const stateGroups = {};
   
-  data.forEach(item => {
+  validData.forEach(item => {
     if (!stateGroups[item.state]) stateGroups[item.state] = [];
     stateGroups[item.state].push(item);
   });
@@ -110,7 +136,7 @@ function getScatterData(data) {
     x: average(records, 'debt_share') * 100,
     y: average(records, 'median_debt'),
     state: state
-  }));
+  })).filter(d => d.x > 0 && d.y > 0);
 }
 
 // Update line chart
@@ -133,6 +159,12 @@ function updateScatterChart() {
   const scatterData = getScatterData(filteredData);
   
   scatterChart.data.datasets[0].data = scatterData;
+  
+  // Dynamic axis scaling
+  if (scatterData.length > 0) {
+    const maxY = Math.max(...scatterData.map(d => d.y)) * 1.1;
+    scatterChart.options.scales.y.max = maxY;
+  }
   
   const { year } = getFilters();
   const badgeText = year === 'all' ? 'All Years' : year;
@@ -188,6 +220,7 @@ function createCharts() {
   // SCATTER CHART
   const scatterCtx = document.getElementById('scatter-chart').getContext('2d');
   const scatterData = getScatterData(allData);
+  const maxY = scatterData.length > 0 ? Math.max(...scatterData.map(d => d.y)) * 1.1 : 2000;
   
   scatterChart = new Chart(scatterCtx, {
     type: 'scatter',
@@ -223,7 +256,7 @@ function createCharts() {
           title: { display: true, text: 'Median ($)', color: '#8899a8', font: { size: 11 } },
           grid: { color: 'rgba(42,58,77,0.5)' },
           ticks: { color: '#8899a8', font: { size: 11 }, callback: v => '$' + v },
-          min: 0
+          min: 0, max: maxY
         }
       }
     }
@@ -232,21 +265,23 @@ function createCharts() {
 
 // Calculate insight for line chart
 function getLineInsight(data, selectedState) {
-  if (data.length < 2) return '';
+  const validData = data.filter(d => d.debt_share != null);
+  if (validData.length < 2) return '';
   
-  const years = [...new Set(data.map(d => d.year))].sort();
+  const years = [...new Set(validData.map(d => d.year))].sort();
   if (years.length < 2) return '';
   
   const firstYear = years[0];
   const lastYear = years[years.length - 1];
   
-  const firstData = getTrendData(data.filter(d => d.year === firstYear), selectedState);
-  const lastData = getTrendData(data.filter(d => d.year === lastYear), selectedState);
+  const firstData = getTrendData(validData.filter(d => d.year === firstYear), selectedState);
+  const lastData = getTrendData(validData.filter(d => d.year === lastYear), selectedState);
   
   if (firstData.length === 0 || lastData.length === 0) return '';
   
   const firstVal = firstData[0].avgShare * 100;
   const lastVal = lastData[0].avgShare * 100;
+  if (firstVal === 0) return '';
   const change = ((lastVal - firstVal) / firstVal * 100).toFixed(0);
   
   if (Math.abs(change) < 5) return 'Medical debt rates remained relatively stable.';
@@ -259,8 +294,9 @@ function getLineInsight(data, selectedState) {
 
 // Calculate insight for scatter chart
 function getScatterInsight(data) {
+  const validData = data.filter(d => d.debt_share != null && d.median_debt != null);
   const stateGroups = {};
-  data.forEach(item => {
+  validData.forEach(item => {
     if (!stateGroups[item.state]) stateGroups[item.state] = [];
     stateGroups[item.state].push(item);
   });
@@ -273,7 +309,9 @@ function getScatterInsight(data) {
     state,
     debtShare: average(records, 'debt_share') * 100,
     medianDebt: average(records, 'median_debt')
-  }));
+  })).filter(d => d.debtShare > 0);
+  
+  if (withAvg.length < 2) return '';
   
   withAvg.sort((a, b) => b.debtShare - a.debtShare);
   
@@ -286,8 +324,9 @@ function getScatterInsight(data) {
 // Update insights
 function updateInsights() {
   const { year, state } = getFilters();
+  const filteredForLine = state === 'all' ? allData : allData.filter(d => d.state === state);
   
-  document.getElementById('line-insight').innerHTML = getLineInsight(allData, state);
+  document.getElementById('line-insight').innerHTML = getLineInsight(filteredForLine, state);
   document.getElementById('scatter-insight').innerHTML = getScatterInsight(filterData(allData));
 }
 
