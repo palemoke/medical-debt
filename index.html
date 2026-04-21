@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>US Medical Debt - Data Visualization</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <h1>Medical Debt</h1>
+      <span>US State Analysis</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="filters">
+      <div class="filter-group">
+        <label for="year-select">Year</label>
+        <select id="year-select">
+          <option value="all">All Years</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="state-select">State</label>
+        <select id="state-select">
+          <option value="all">All States</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="charts-section">
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>Trends Over Time</h3>
+          <span class="chart-badge" id="trend-badge">National</span>
+        </div>
+        <div class="chart-body">
+          <canvas id="line-chart"></canvas>
+        </div>
+        <div class="chart-insight" id="line-insight"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>Debt Rate vs Median</h3>
+          <span class="chart-badge" id="scatter-badge">All Years</span>
+        </div>
+        <div class="chart-body">
+          <canvas id="scatter-chart"></canvas>
+        </div>
+        <div class="chart-insight" id="scatter-insight"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
