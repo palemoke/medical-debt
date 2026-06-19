@@ -154,9 +154,100 @@ main {
   font-family: 'IBM Plex Mono', monospace;
 }
 
+.chart-card-wide {
+  grid-column: 1 / -1;
+}
+
 .chart-body {
   padding: 20px;
   height: 280px;
+}
+
+.chart-body canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+#map-container {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.chart-body-tall {
+  height: 340px;
+}
+
+.chart-body-heatmap {
+  padding: 4px 20px 20px;
+  height: 280px;
+  overflow: hidden;
+}
+
+/* ... a meglévő CSS kódod a heatmap-tooltip-ig bezárólag ... */
+
+.heatmap-tooltip strong {
+  color: var(--accent-primary);
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* TÉRKÉP STÍLUSOK */
+.state-boundary {
+  stroke: var(--bg-secondary);
+  stroke-width: 1px;
+  cursor: pointer;
+  transition: fill 0.15s ease, stroke 0.15s ease;
+}
+
+.state-boundary:hover {
+  stroke: var(--text-primary);
+  stroke-width: 2px;
+}
+
+.map-tooltip {
+  position: fixed;
+  pointer-events: none;
+  opacity: 0;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--text-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  z-index: 100;
+  transition: opacity 0.15s ease;
+  white-space: nowrap;
+}
+
+.map-tooltip .tooltip-state {
+  font-weight: 600;
+  color: var(--accent-primary);
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.map-tooltip .tooltip-value {
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ... Responsive és a kód többi része ... */
+.map-tooltip .tooltip-state {
+  font-weight: 600;
+  color: var(--accent-primary);
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.map-tooltip .tooltip-value {
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.map-legend {
+  font-size: 10px;
+  fill: var(--text-secondary);
+  font-family: 'IBM Plex Mono', monospace;
 }
 
 .chart-body canvas {

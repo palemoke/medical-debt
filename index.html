@@ -41,6 +41,17 @@
         </div>
         <div class="chart-insight" id="line-insight"></div>
       </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>Medical Debt Map</h3>
+          <span class="chart-badge" id="map-badge">By State</span>
+        </div>
+        <div class="chart-body chart-body-heatmap" id="heatmap-container">
+          </div>
+        <div class="chart-insight" id="map-insight"></div>
+      </div>
+
       <div class="chart-card">
         <div class="chart-header">
           <h3>Debt Rate vs Median</h3>
@@ -51,10 +62,26 @@
         </div>
         <div class="chart-insight" id="scatter-insight"></div>
       </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>Uninsured Rate vs. Hospital Market Concentration (HHI)</h3>
+          <span class="chart-badge" id="bar-badge">National</span>
+        </div>
+        <div class="chart-body">
+          <canvas id="bar-chart"></canvas>
+        </div>
+        <div class="chart-insight" id="bar-insight"></div>
+      </div>
     </section>
   </main>
 
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  
+  <script src="https://unpkg.com/topojson@3"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
   <script src="script.js"></script>
 </body>
 </html>
