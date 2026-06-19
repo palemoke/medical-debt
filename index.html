@@ -40,16 +40,18 @@
           <canvas id="line-chart"></canvas>
         </div>
         <div class="chart-insight" id="line-insight"></div>
+        <div class="chart-description">This chart displays the share of adults with medical debt in collections between 2011 and 2023. Users can explore trends over time by selecting a specific state or by viewing the national average across all states. The year and state filters allow for flexible comparison of medical debt patterns at both the state and national levels.</div>
       </div>
 
       <div class="chart-card">
         <div class="chart-header">
-          <h3>Medical Debt Map</h3>
+          <h3>Medical Debt-to-Income Ratio by State</h3>
           <span class="chart-badge" id="map-badge">By State</span>
         </div>
         <div class="chart-body chart-body-heatmap" id="heatmap-container">
           </div>
         <div class="chart-insight" id="map-insight"></div>
+        <div class="chart-description">This map displays the share of adults with medical debt in collections across the United States. Users can select a specific year to examine state-level differences or compare all states within a given year. The interactive map allows for the exploration of geographic patterns and variations in medical debt prevalence over time.</div>
       </div>
 
       <div class="chart-card">
@@ -61,6 +63,7 @@
           <canvas id="scatter-chart"></canvas>
         </div>
         <div class="chart-insight" id="scatter-insight"></div>
+        <div class="chart-description">This scatter plot illustrates the relationship between the share of adults with medical debt and the median amount of medical debt across states. Users can select a specific year or view all years combined to compare patterns and identify differences among states. The visualization enables the exploration of how debt prevalence and median debt levels vary over time and across states.</div>
       </div>
 
       <div class="chart-card">
@@ -72,8 +75,13 @@
           <canvas id="bar-chart"></canvas>
         </div>
         <div class="chart-insight" id="bar-insight"></div>
+        <div class="chart-description">This dual-axis chart presents the trends in the uninsured population rate and the hospital market concentration index (HHI), which measures the degree of concentration within hospital markets, from 2011 to 2023. Users can select a specific state to compare these indicators over time or view the national averages, enabling the analysis of variations in insurance coverage and market concentration across states and years.</div>
       </div>
     </section>
+
+    <footer class="data-source">
+      Source: Urban Institute Data Catalog, <em>The Changing Medical Debt Landscape in the United States (2011–2023)</em>
+    </footer>
   </main>
 
   <script src="https://d3js.org/d3.v7.min.js"></script>
